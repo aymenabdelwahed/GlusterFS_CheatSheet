@@ -1,0 +1,55 @@
+BUILDING A VOLUME:
+The volume will be distributed if no stripe or replica options are specified.
+	//Create a distributed volume:
+	gluster volume create firstvol servera:/bricks/brick-a1/brick serverb:/bricks/brick-b1/brick
+	//Start newly created volume, to make it accessible to clients
+	gluster volume start firstvol
+	gluster volume status firstvol
+	//Overview of the existing volumes
+	gluster volume list
+	//Remove a volume
+	gluster volume delete firstvol
+	//Remove metadata/attributes from the old bricks or simply remove/create the brick sub-dir
+	setattr -x
+	//Check attributes:
+	getfattr -d -m'.*' 
+
+TESTING VOLUMES:
+	//Install clients
+	yum install glusterfs-fuse
+	mkdir /mnt/firstvol
+	mount -t glusterfs servera:/bricks/brick-a1/brick /mnt/firstvol
+	//Write files
+	touch /mnt/firstvol/file{0..099}
+	umount /mnt/firstvol
+
+VOLUME TYPES:
+Gluster can combine bricks into volumes in 3 main ways:
+	- Distributed (Default): Any file always lives on one brick.
+		Allows for a maximum usage of available storage.
+		Possible lost of the files stored on a specific brick if it becomes unavailable.
+		> Useful when total storage space is more important than availability.
+	# gluster volume create VOL_NAME <BRICKS>
+
+	- Replicated: Bricks are mirrored to each other (A file written to one brick will also be written to one or more other bricks)
+		> Offer redundancy and HA, but at the cost of storage capacity (reduced)
+	# gluster volume create VOL_NAME replica 2 <BRICKS>
+	- Dispersed: Fragments of the same object are dispersed across different bricks.
+		Based on Erasure Coding (EC), which is a method of data protection where data is broken into fragments, expanded and encoded with redundant data pieces, and stored across a set of different locations.
+		> RAID 5 or 6 = Protection on the block level <=> DISPERSED VOL = Proection on the file level
+		> Dispersed volumes use a number of bricks equal to disperse-data plus redundancy.
+		> Supported layouts:
+			- Number of bricks(N) = Min Nb of online Bricks (K) + Allowed failed bricks (K) >> N=K+M
+			- 6 Bricks for a redundancy level 2 (4+2)
+			- 11 Bricks for a redundancy level 3 (8+3)
+			- 12 Bricks for a redundancy level 4 (8+4)
+	# gluster volume create VOL_NAME diperse-data K redundancy M <BRICKS>
+	# gluster volume create dispesevol disperse-data 4 redundancy 2 brick1 brick2 brick3 brick4 brick5 brick6
+
+	- Distributed-Replicated volumes: A number of replicated sets is formed equal to the number of bricks in the volume divided by the replica count. Files are then distributed acros these replicated sets.
+		> Make sure to specify a number of bricks that is a multiple of the replica count, or a multiple of the dispersed-data + redundancy count.
+		> Distributed-replicated volumes are sometimes referred to as X x Y volumes. X=DistributionCount; Y=ReplicaCount
+	# gluster volume create distrepvol replica 2 servera:/bricks/brick-a3/brick serverc:/bricks/brick-b3/brick serverd:/bricks/brick-c3/brick servere:/bricks/brick-d3/brick
+
+	- Distributed-Dispersed volumes: A number of dispersed data is formed equal to the number of bricks in the volume divided by the (disperse-data + redundancy) count. Files are then distributed across these dispersed sets.
+		> Distributed-dispersed volumes are referred to as Xx(K+M) volumes. X=DistributionCount; K=disperse-dataCount; M=RedundancyCount.
