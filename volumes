@@ -77,3 +77,41 @@ Options to not forget !
 	- server.root-squash	(same as when using the rootsquash option on an NFS export)
 	- user.cifs		Disable/enable SMB sharing
 >>> When changing access rules, you will sometimes need to stop then start your volume in order for the changes to become active. 
+
+TIMEOUTS and WARNINGS:
+	//Setting the default SOFT-LIMIT:
+	gluster volume quota <VOLUME> default-soft-limit <SOFTLIMIT-PERCENTAGE>
+	//Setting quota soft-timeouts: (To update the usage tables for quotas at specified interval)
+	gluster volume quota <VOLUME> soft-timeout <TIMEOUT>
+	gluster volume quota graphics soft-timeout 5s
+	//Setting quota hard-timeouts:
+	gluster volume quota <VOLUME> hard-timeout <TIMEOUT>
+	gluster volume quota graphics hard-timeout 1s
+
+REPORTING QUOTAS:
+	//Check the quota usage for a volume (current limits and usage..)
+	gluster volume quota <VOLUME> list
+	//Volumes can be configured to report quota information
+	//Enable client-side quota reporting using "df"
+	gluster volume set <VOLUME> quota-deem-statfs on
+	
+EXTENDING VOLUMES:
+	//Growing a running volumes, by adding bricks to it
+	gluster volume add-brick <VOLUME> replica <NEW-REPLICA-COUNT> BRICK
+	gluster volume add-brick <VOLUME> replica 2 serverc:/bricks serverd:/bricks
+	//Rebalancing volumes after shrinking or extending volumes (Moves files between bricks to match a new distributed layout)
+	gluster volume rebalance <VOLUME> start
+	gluster volume rebalance <VOLUME> status
+	//Throttling reblance operations to avoid negative performance impact on a volume
+	gluster volume set <VOLUME> cluster.rebal-throttle aggressive|normal|lazy
+
+SHRINKING VOLUMES: 
+>> Volumes can be shrunk while online by removing one or more bricks
+	//Start the remove command
+	gluster volume remove-brick <VOLUME> serverc:/brick/brick-c1/brick start
+	//Monitor the bricks removal progress
+	gluster volume remove-brick <VOLUME> serverc:/brick/brick-c1/brick status
+	//Commit your changes, once bricks have finished migrating their data
+	gluster volume remove-brick <VOLUME> serverc:/brick/brick-c1/brick commit
+	//Rebalance the volume
+	gluster volume rebalance <VOLUME> start
