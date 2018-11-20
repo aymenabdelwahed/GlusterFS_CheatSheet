@@ -1,0 +1,77 @@
+NATIVE CLIENTS:
+Native client is built around the FUSE technology (File System in Userspace) and supports POSIX ACLs and automatic failover.
+Native client is the recommended way, and doesn't rely on any single host being available.
+Native client communicates directly with the different bricks in the volume.
+	//Install Fuse
+	yum install glusterfs-fuse
+	//Update clients (Unmount any mounted volumes during the update process)
+	yum update glusterfs glusterfs-fuse
+Native client mount options are:
+	- backup-volfile-servers=<SERVER1>:<SERVER2>: Fallback to server2 in case of server1 unreacheable issues are encountred.
+	- ro: Mount the volume as ReadOnly
+	- acl: Enable POSIX ACLs on this volume. Using native client, ACLs can be both enforced and set.
+	- _netdev: Used by the system startup logic (not by the native client) > Volume will not be mounted until after networking has been started.
+
+Manually mount a volume using POSIX ACLs:
+	# mount.glusterfs -o acl storage-server:/volume /mnt/volume
+Mounting a volume even when the host specified is unreachable:
+	vim /etc/fstab
+	storage-server-1:/volume /mnt/volume glusterfs _netdev,backup-volfile-servers=storage-server-2:storage-server-3 0 0
+
+NFS CLIENT:
+By default, any new Gluster volume will be exported over NFSv3, with ACLs enabled and this from all servers. >> Allow 2 services through firewall (nfs and rpc-bind)
+	> Allows clients that can't run the native client to access shared data..
+	> Unlike FUSE, not automatic fail over to using another server will be done..
+
+	//Configure firewall on the server side
+	firewall-cmd --add-service nfs --add-service=rpc-bind --permanent
+	firewall-cmd --reload
+
+	//Install NFS client:
+	yum install nfs-utils
+	//Mount NFS (Specify NFS v3)
+	mount -t nfs -o vers=3,proto=tcp servera:/mediadata /mnt/mediadata
+	//Add to fstab
+	echo "servera:/mediadata /mnt/mediadata nfs rw,vers=3,proto=tcp 0 0" >> /etc/fstab
+	mount -a; df -hT
+
+CIFS CLIENT/SERVER:
+Gluster supports exporting volumes over the SMB protocol using Samba 4.
+> Lors de l'utilisation du plug-in samba-vfs-glusterfs, il n'est pas nécessaire de monter les volumes sur le serveur exportant le partage samba, car le plug-in vfs utilise l'API GlusterFS pour accéder directement aux données.
+//Prepare a Gluster Server to export volumes using SMB:
+	//Install Samba package (both of Samba 4 and VFS plugin for direct volume access)
+	yum install samba
+	//Start Samba service
+	systemctl start smb.service; systemctl enable smb.service
+	//Open the Samba service
+	firewall-cmd --add-service smb --permanent && firewall-cmd --reload
+//Configure a Volume to e exported using Samba:
+	//Disable "stat-prefetch" for the volume that needs to be exported: (Can cause issues over samba and accessing from other clients at the same time)
+	gluster volume set <VOLUME> stat-prefetch off
+	//Allow communication with the bricks that make up this volume from unprivileged ports
+	gluster volume set <VOLUME> server.allow-insecure on
+	//Set the fsync delay for the volume to zero microseconds, to ensure proper lock and I/O coherency:
+	gluster volume set <VOLUME> storage.batch-fsync-delay-usec 0
+	//Restart the volume; This will trigger the hook script "/var/lib/glusterd/hooks/1/post/S30samba-start.sh which will adds an export to /etc/samba/smb.conf
+	gluster volume stop mediadata && gluster volume start mediadata
+	//Check if the share was added to samba automatically = which allow samba to automatically talk to our volume whithout having to mount something on any machine...
+	grep -A 10 gluster-mediadata /etc/samba/smb.conf
+	//Configure Glusterd daemon to allow communication from unprivileged ports:
+	vim /etc/glusterfs/glusterd.vol
+		option rpc-auth-allow-insecure on
+	systemctl restart glusterd.service
+
+//Configure Clients:
+	//Install samba-client: gives the smbclient commands, which provides the possibility to talk to samba without having to mount a volume..
+	//Install cifs-utils: to be able to mount a CIFS FileSystem
+	yum install samba-client cifs-utils
+
+	//Check what's available on servera:
+	smbclient -L servera -U smbuser%redhat
+
+SMB Clients process:
+	 Red Hat Gluster Storage volumes exported using samba will have the name gluster-<VOLNAME>, and can be used the same way as any other samba share. This means specifying the cifs file system type, and specifying either a user= and pass= mount option, or a credentials= mount option. If neither of these options is used the mount command will ask for credentials during the mount process, which is most likely not wanted for automated mounts from /etc/fstab. 
+
+//Disable automated sharing for volumes:
+	//Set either of user.cifs or user.smb to disable
+	gluster volume set <VOLNAME> user.cifs disable
