@@ -1,29 +1,45 @@
-BUILDING A VOLUME:
+# BUILDING A VOLUME:
 The volume will be distributed if no stripe or replica options are specified.
-	//Create a distributed volume:
-	gluster volume create firstvol servera:/bricks/brick-a1/brick serverb:/bricks/brick-b1/brick
-	//Start newly created volume, to make it accessible to clients
-	gluster volume start firstvol
-	gluster volume status firstvol
-	//Overview of the existing volumes
-	gluster volume list
-	//Remove a volume
-	gluster volume delete firstvol
-	//Remove metadata/attributes from the old bricks or simply remove/create the brick sub-dir
-	setattr -x
-	//Check attributes:
-	getfattr -d -m'.*' 
 
-TESTING VOLUMES:
+Create a distributed volume:
+```
+gluster volume create firstvol servera:/bricks/brick-a1/brick serverb:/bricks/brick-b1/brick
+```
+Start newly created volume, to make it accessible to clients
+```
+gluster volume start firstvol
+gluster volume status firstvol
+```
+Overview of the existing volumes
+```
+gluster volume list
+```
+Remove a volume
+```
+gluster volume delete firstvol
+```
+
+Remove metadata/attributes from the old bricks or simply remove/create the brick sub-dir
+```
+setattr -x
+```
+
+Check attributes:
+```
+getfattr -d -m'.*' 
+```
+
+# TESTING VOLUMES:
 	//Install clients
 	yum install glusterfs-fuse
 	mkdir /mnt/firstvol
 	mount -t glusterfs servera:/bricks/brick-a1/brick /mnt/firstvol
+	
 	//Write files
 	touch /mnt/firstvol/file{0..099}
 	umount /mnt/firstvol
 
-VOLUME TYPES:
+# VOLUME TYPES:
 Gluster can combine bricks into volumes in 3 main ways:
 	- Distributed (Default): Any file always lives on one brick.
 		Allows for a maximum usage of available storage.
@@ -54,7 +70,7 @@ Gluster can combine bricks into volumes in 3 main ways:
 	- Distributed-Dispersed volumes: A number of dispersed data is formed equal to the number of bricks in the volume divided by the (disperse-data + redundancy) count. Files are then distributed across these dispersed sets.
 		> Distributed-dispersed volumes are referred to as Xx(K+M) volumes. X=DistributionCount; K=disperse-dataCount; M=RedundancyCount.
 
-SETTING VOLUME OPTIONS:
+# SETTING VOLUME OPTIONS:
 Volume-specific options can be set. These options range from access control to low-level tuning options for volumes.
 	//Query all options that has been set to a volume
 	gluster volume info mediadata
