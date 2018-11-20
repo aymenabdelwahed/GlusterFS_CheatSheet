@@ -41,14 +41,17 @@ setfacl -R -m d:g:admins:rwX /mnt/groupdata/admindocs
 ```
 
 # QUOTAS:
-	//Enable directory quotas or volume quotas
+Enable directory quotas or volume quotas
+```
 	gluster volume quota <VOLUME> enable
-	
-	>> Quotas are not set for the entire volume by default.
+```
+>> Quotas are not set for the entire volume by default.
+Quotas are set as a :
+	- hard-limit - the maximum allowed size of all files and directories under a directory
+	- soft-limit - a percentage of the hard limit (if soft-limit are exceeded, entries will be placed in the log files for that bricks that make up the volume)
 
-	//Quotas are set as a :
-		- hard-limit - the maximum allowed size of all files and directories under a directory
-		- soft-limit - a percentage of the hard limit (if soft-limit are exceeded, entries will be placed in the log files for that bricks that make up the volume)
-	//Set quotas as a hard-limit on a directory
+Set quotas as a hard-limit on a directory
+```
 	gluster volume quota <VOLUME> limit-usage <PATH-ON-VOLUME> <SIZE> <SOFTLIMIT-PERCENTAGE>
 	gluster volume quota graphics limit-usage /raw 1GB 50%
+```
