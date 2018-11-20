@@ -1,5 +1,4 @@
-# GlusterFS_CheatSheet
-GlusterFS Cheat Sheet
+# GlusterFS Cheat Sheet
 
 Red Hat Gluster Storage is based on the work of the GlusterFS project to provide enterprise class storage solutions built on top of commodity hardware.
 Red Hat Gluster Storage combines file and object storage with a scaled-out architecture 
