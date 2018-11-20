@@ -65,3 +65,28 @@ SHRINKING A TIERED VOLUME:
 	gluster volume remove-brick demo-vol demo2:/bricks1 commit
 	//Re-attach the hot tier
 	gluster volume tier demo-vol attach replica 2 demo2:/bricks/brick1 demo2:/bricks/brick2
+
+PROMOTE/DEMOTE FILES
+//Configure Promotion/demotions
+	//Configure watermarks, which used to classify file to be promoted or demoted
+	cluster.watermark-hi
+	cluster.watermark-lo
+	>>> If DataUsage of the hot tier is under "cluster.watermark.lo" (75% by default) > Files can only be promoted
+	>>> If DataUsage of the hot tier is above "cluster.watermark.hi" (90% by default) > files can only be demoted
+
+//Configuring Promotion/demotion frequencies:
+	//How often files are promoted/demoted can be controlled with 2 settings:
+	cluster.tier-promote-frequency (default 120s)
+	cluster.tier-demote-frequency (default 3600s)
+	>>> If data has been accessed at least once in the last "cluster.tier-promote-frequency" > Data is promoted
+	>>> If data has not been accessed in the last "" cluster.tier-demote-frequency" > Data becomes eligible for demotion
+
+	//It's also possible to configure the minium number of reads/writes to mark a file as host:
+	- cluster.read-freq-threshold (Default 0)[values between 0-1000]
+	- cluster.write-freq-threshold(Default 0)[values between 0-1000]
+	> A value from 1 to 1000 indicates the minimum number of times a file must be accessed in order to become eligible for promotion
+
+//Limiting data movement:
+	Limit the amount of data that is moved between the hot and the cold tier can be limited to:
+	- cluster.tier-max-files: (default to 10000 files to be moved during a single cycle)
+	- cluster.tier-max-mb: (default to 4000MiB of data to be moved during a single cycle)
