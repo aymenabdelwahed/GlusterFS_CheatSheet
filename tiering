@@ -9,3 +9,59 @@ TIERING ARCHITECTURE:
 > File migration occurs based on the following:
 	- Temperature: the frequency with which the file is accessed
 	- Capacity: the host subvolume's capacity (or watermark) has been reached
+DATA MOVEMENT FRAMEWORK:
+> The data movement framework is a generalization of the migration logic which leverages the rebalance logic. 
+	The triggers to migrate a file are driven by the application.
+	The files are either promoter or demoted to the appropriate tier.
+	The frequency with which files are checked from promotion/demotion can be configured to suit specific glusterfs architectures.
+
+> Data movement trigger: Is the mechanism that triggers the movement of a file from the Source Storage Unit to Destination Storage Unit.
+	> The SSU and DSU specify the glusterfs brick/volume the data is being migration from to the glusterfs brick/volume on which data will reside.
+	> The data movement trigger will create the Data Movement Request (DMR) which is submitted to the Data Movement Service (DMS) as well.
+	> There are 2 triggers, the I/O Path Trigger and the Scanning Trigger
+	-	I/O Path Trigger: When a file meets a specified data movement rule this trigger is initiated
+	-	Scanner Trigger: Depending on the specified movement rule, the scanner trigger selects objects/files as it walks through the Specified Source Unit. After selecting an object/file, a DMR is submitted to the DMS.
+
+> Data Movement Service (DMS): is responsible for the actual movement of data and for processing the request. This service receives a DMR submitted by the DataMovementTriggers. 
+
+>>>>> Data Movement Trigger: Determine promotion/demotion of data
+>>>>> Data Movement Plug-in: Identify and selelect concerned file for movement..
+
+//Attach Hot tier to prod-vol
+	gluster volume tier prod-vol attach replica 2 servera:/bricks/brick-a2/brick serverb:/bricks/brick-b2/brick
+	gluster volume info prod-vol
+//Verify the status of tier enablement
+	gluster volume tier prod-vol status
+
+EXTENDING A TIERED VOLUME:
+> Tiered volumes allow adding additional bricks to both the cold/hot tiers.
+// Add a new brick to the cold tier
+	// Detach the hot tier from the volume for which the cold-tier is going to be expanced with new bricks
+	gluster volume tier demo-vol detach start
+	gluster volume tier demo-vol detach commit
+	gluster volume tier demo-vol detach status
+	//Add the new brick to the cold-tier:
+	gluster volume add-brick demo-vol demo2:/bricks/brick1 demo2:/bricks/brick2
+	//Rebalance the volume:
+	gluster volume rebalance demo-vol start
+	gluster volume rebalance demo-vol status
+	//Re-attach the hot tier to the volume:
+	gluster volume tier demo-vol attach replica 2 demo2:/bricks/brick1 demo2:/bricks/brick2
+
+//Add a new brick to the hot tier:
+	//detach the hot tier first:
+	gluster volume tier demo-vol detach start
+	gluster volume tier demo-vol detach commit
+	//Re-attach the hot tier including both the old and new bricks
+	gluster volume tier demo-vol attach replica 2 demo-a:/bricks/brick-a2/brick demo-a:/bricks/brick-a3/brick demo-b:/bricks/brick-b2/brick demo-b:/bricks/brick-b3/brick
+
+SHRINKING A TIERED VOLUME:
+> Both the cold and hot tier of a volume can be shrunk
+	//Detach the soon to be shrunk
+	gluster volume tier demo-vol detach start
+	gluster volume tier demo-vol detach commit
+	//Remove the bricks
+	gluster volume remove-brick demo-vol demo2:/bricks1 start
+	gluster volume remove-brick demo-vol demo2:/bricks1 commit
+	//Re-attach the hot tier
+	gluster volume tier demo-vol attach replica 2 demo2:/bricks/brick1 demo2:/bricks/brick2
