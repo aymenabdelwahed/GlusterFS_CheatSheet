@@ -1,0 +1,16 @@
+PREPARING NODES:
+	//Apply firewalld configuration:
+	firewall-cmd --add-service glusterfs --permanent; firewall-cmd --reload
+	//Select a tuned profile based on throughpyt-performance profile: (rhgs-random-io for numerous small rw & rhgs-sequential-io for larger file transfers)
+	tuned-adm list
+	tuned-adm profile rhgs-random-io
+	//Configure a trusted storage pool
+	gluster peer probe server2
+	gluster peer probe server3
+	//Check the status
+	gluster peer status
+	//Check log files:
+	tail -f /var/log/glusterfs/etc-glusterfs-glusterd.vol.log
+	
+	//Removing a node from a trusted storage pool:
+	gluster peer detach server3
