@@ -116,7 +116,9 @@ gluster volume reset mediadata features.read-only
 # TIMEOUTS and WARNINGS:
 
 Setting the default SOFT-LIMIT:
-```gluster volume quota <VOLUME> default-soft-limit <SOFTLIMIT-PERCENTAGE>
+```
+gluster volume quota <VOLUME> default-soft-limit <SOFTLIMIT-PERCENTAGE>
+```
 
 Setting quota soft-timeouts: (To update the usage tables for quotas at specified interval)
 ```
