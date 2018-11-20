@@ -46,9 +46,9 @@ Enable directory quotas or volume quotas
 	gluster volume quota <VOLUME> enable
 ```
 > Quotas are not set for the entire volume by default.
-Quotas are set as a :
-	- hard-limit - the maximum allowed size of all files and directories under a directory
-	- soft-limit - a percentage of the hard limit (if soft-limit are exceeded, entries will be placed in the log files for that bricks that make up the volume)
+> Quotas are set as a :
+>	- hard-limit - the maximum allowed size of all files and directories under a directory
+>	- soft-limit - a percentage of the hard limit (if soft-limit are exceeded, entries will be placed in the log files for that bricks that make up the volume)
 
 Set quotas as a hard-limit on a directory
 ```
