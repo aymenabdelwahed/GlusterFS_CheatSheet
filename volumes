@@ -53,3 +53,27 @@ Gluster can combine bricks into volumes in 3 main ways:
 
 	- Distributed-Dispersed volumes: A number of dispersed data is formed equal to the number of bricks in the volume divided by the (disperse-data + redundancy) count. Files are then distributed across these dispersed sets.
 		> Distributed-dispersed volumes are referred to as Xx(K+M) volumes. X=DistributionCount; K=disperse-dataCount; M=RedundancyCount.
+
+SETTING VOLUME OPTIONS:
+Volume-specific options can be set. These options range from access control to low-level tuning options for volumes.
+	//Query all options that has been set to a volume
+	gluster volume info mediadata
+	//Check all set options
+	gluster volume get mediadata get all
+	//Set a volume option
+	gluster volume set mediadata features.read-only on
+	//Check the current option's value
+	gluster volume get mediadata features.read-only
+	//Reset the default value
+	gluster volume reset mediadata features.read-only
+
+Options to not forget !
+	- auth.allow *		A comma-separated list of native clients that are allowed to connect to this volume (10.0.0.*)
+	- auth.reject		A list of client that never be allowed to connect to this volume using native client.
+	- nfs.rpc-auth-allow	List of clients granted to connect using NFSv3 client
+	- nfs.rpc-auth-reject
+	- nfs.disable		When set to on, the volume will not be exported over NFSv3
+	- features.read-only	Export the volume in read only for all clients accessing it (on)
+	- server.root-squash	(same as when using the rootsquash option on an NFS export)
+	- user.cifs		Disable/enable SMB sharing
+>>> When changing access rules, you will sometimes need to stop then start your volume in order for the changes to become active. 
