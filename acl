@@ -1,4 +1,4 @@
-SETTING POSIX ACLs: Fine-grained access control to files and directories...
+# SETTING POSIX ACLs: # Fine-grained access control to files and directories...
 	//Enable ACLs by adding ACL as a mount option:
 	vim /etc/fstab
 	servera:/groupdata /mnt/groupdata glusterfs _netdev,acl 0 0
@@ -20,7 +20,7 @@ SETTING POSIX ACLs: Fine-grained access control to files and directories...
 	setfacl -R -m g:admins:rwX /mnt/groupdata/admindocs
 	setfacl -R -m d:g:admins:rwX /mnt/groupdata/admindocs
 	
-QUOTAS:
+# QUOTAS:
 	//Enable directory quotas or volume quotas
 	gluster volume quota <VOLUME> enable
 	>> Quotas are not set for the entire volume by default.
