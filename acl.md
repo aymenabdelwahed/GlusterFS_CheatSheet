@@ -1,9 +1,11 @@
 # SETTING POSIX ACLs: # 
 Fine-grained access control to files and directories
 
-	//Enable ACLs by adding ACL as a mount option:
-	vim /etc/fstab
-	servera:/groupdata /mnt/groupdata glusterfs _netdev,acl 0 0
+Enable ACLs by adding ACL as a mount option:
+//
+vim /etc/fstab
+servera:/groupdata /mnt/groupdata glusterfs _netdev,acl 0 0
+//
 
 	//Apply new ACL, to recursively give the user lisa R/W access to all files in the /springfield-library
 	setfacl -R -m u:lisa:rwX /springfield-library
