@@ -1,0 +1,72 @@
+MANAGE SNAPSHOTS
+> Using LVM snapshots of the bricks that make up the volume.
+>> If georeplication is configured for the volume to snapshot, it will need to be paused before the snapshot can be made...
+	//Create a snapshot of a volume (add no-timestamp to not get a time stamp added to the snap's name)
+	gluster snapshot create <SNAPSHOTNAME> <VOLUME> no-timestamp description "I like these files.."
+	lvs; lvdisplay
+
+	//Mounting a snapshot / Activate a snapshot to make it accessible to clients:
+	gluster snapshot activate <SNAPSHOTNAME>
+	echo "servera:/snaps/<SNAPSHOTNAME>/<PARENTVOLUME> /mnt/demosnap glusterfs defaults 0 0" >> /etc/fstab
+
+	//Checking snapshots
+	gluster snapshot list
+	gluster snapshot info <SNAPSHOTNAME>
+	gluster snapshot status <SNAPSHOTNAME>
+
+	//User-Serviceable snapshots: To make it easier for users to restore their own data from snapshots, USS (user-serviceable snapshots) can be configured.
+	> When enabled, every directory on a volume with snapshots will have a virtual directory named .snaps
+	gluster volume set <VOLUMENAME> features.uss on
+
+	//Restoring a snapshot, by cloning the snap into a new volume and promoting it to the original volume
+	gluster volume clone <NEWVOLUME> <SNAPSHOTNAME>
+	gluster snapshot restore <SNAPSHOTNAME>
+	//Once restore is finished, a full heal will need to be triggered
+	gluster volume heal <VOLUME> full
+	>> Restoring a snapshot in this way will remove the original volume, and replace it with the snapshot, and remove the snapshot.. >> The brick path in the volume will be changed.. >> Fixing the fstab should be needed...
+
+	//Removing a snapshot
+	gluster snapshot delete <SNAPSHOTNAME>
+	//Delete all snapshots of a volume
+	gluster snapshot delete volume <VOLUME>
+	//Remove all snapshots for all volumes
+	gluster snapshot delete all
+
+SCHEDULING SNAPSHOTS:
+> Before snapshots can be scheduled for a volume, the snapshot scheduler will need to be initialized and enabled on all nodes that will participate in snapshot scheduling..
+//PREP PHASE:
+	//Enable shared storage and check the shared storage availability
+	gluster volume set all cluster.enable-shared-storage enable
+	df -h | grep /run/gluster/shared_storage
+	//Allow "crond" daemon access to files labeled "fusefs_t", by enabled SELinux boolean "cron_system_cronjob_use_shares" on all nodes:
+	setsebool -P cron_system_cronjob_use_shares 1
+	//On each node, initialize the snapshot scheduler directories and enable the snapshot scheduler: 
+	sh snap_scheduler.py init
+	sh snap_scheduler.py enable
+	//Check whether the directory is properly setup:
+	ll /var/run/gluster/shared_storage/snaps/
+
+//SCHEDULE PHASE:
+	//Add jobs (job name, schedule cron syntax and a volume to snap)
+	snap_scheduler.py add "<JOBNAME>" "<SCHEDULE>" <VOLUME>	
+		<SCHEDULE>	min hours day-of-month month day-of-week
+	snap_scheduler.py add examplejob "*/30 9-16 * * 1-5" snapvolume
+	//List snaps
+	snap_scheduler.py list
+	//Remove snaps
+	snap_scheduler.py delete JOBNAME
+	//Edit snaps:
+	snap_scheduler.py edit "<JOBNAME>" "<SCHEDULE>" <VOLUME>
+	tail -f /var/log/glusterfs/snap_scheduler.log
+	tail -f /var/log/glusterfs/gcron.log
+//SNAPSHOT BEHAVIOR
+	//Check config
+	gluster snapshot config
+	//Enable snapshot on creation
+	gluster snapshot config activate-on-create yes
+	//Set the max number of snaps allowed (default 256)
+	gluster snapshot config snap-max-hard-limit 20
+	//The max number of snaps allowed on a volume before warnings are issued
+	gluster snapshot config snap-max-soft-limit 85
+	//Automatically remove the oldest snaps, when "snap-max-soft-limit" is reached:
+	gluster snapshot config auto-delete on
