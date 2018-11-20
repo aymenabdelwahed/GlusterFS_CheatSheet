@@ -1,0 +1,11 @@
+TIERING:
+> Tiering = Classifying data = Defining data with a particular classification and moving said data based on the user's I/O access.
+	>> Hot data placed on the higher performing hot tier (SSDs): treated as a cache for cold subvolume.
+	>> Inactive data to a lower performing cold tier (Spinning disks) without any I/O interruption.
+> When the activity level of data is identified, tiering uses the rebalance logic to relocate active and inactive data to the most appropriagte storage tier.
+
+TIERING ARCHITECTURE:
+> Tiering translator: is based on DHT and rebalance logic and splits a volume into two subvolumes, hot and cold.
+> File migration occurs based on the following:
+	- Temperature: the frequency with which the file is accessed
+	- Capacity: the host subvolume's capacity (or watermark) has been reached
