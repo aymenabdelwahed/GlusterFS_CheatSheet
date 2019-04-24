@@ -1,15 +1,17 @@
 # GlusterFS Cheat Sheet
 
 Red Hat Gluster Storage is based on the work of the GlusterFS project to provide enterprise class storage solutions built on top of commodity hardware.
-Red Hat Gluster Storage combines file and object storage with a scaled-out architecture 
-FEATURES:
+Red Hat Gluster Storage combines file and object storage with a scaled-out architecture.
+
+#### FEATURES:
 	- Scale-Up/Scale-Out:  pool capacity, redundancy, and availability
 	- Decentralized: does not rely on a central metadata server to locate files. 
 	- High Availability: synchronous mirroring across multiple servers. 
 	- No Application Rewrites: provides POSIX-compliant file systems to clients
 	- Commodity Hardware 
 	- Bare Metal and Cloud 
-TERMINOLOGY:
+
+### TERMINOLOGY:
 - Trusted Storage Pool: When a Red Hat Gluster Storage server first starts, it belongs to a Trusted Storage Pool with only itself as a member. Additional servers can be added later to form a larger pool.
 - Node: A server participating in a Trusted Storage Pool or cluster
 - Brick: Gluster Storage allows multiple file systems (called Bricks) to be combined into one larger file system called a Volume.
