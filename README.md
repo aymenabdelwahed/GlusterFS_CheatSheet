@@ -12,7 +12,7 @@ Red Hat Gluster Storage combines file and object storage with a scaled-out archi
 - Commodity Hardware 
 - Bare Metal and Cloud 
 
-### TERMINOLOGY:
+#### TERMINOLOGY:
 - Trusted Storage Pool: When a Red Hat Gluster Storage server first starts, it belongs to a Trusted Storage Pool with only itself as a member. Additional servers can be added later to form a larger pool.
 - Node: A server participating in a Trusted Storage Pool or cluster
 - Brick: Gluster Storage allows multiple file systems (called Bricks) to be combined into one larger file system called a Volume.
