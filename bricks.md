@@ -1,8 +1,9 @@
-MANAGE BRICKS/VOLUMES
+## MANAGE BRICKS/VOLUMES
 In order to start building volumes, it will first be necessary to create bricks.
 > A Brick is an XFS file system (with 512-byte inodes) mounted on one of the storage servers !
 > It's recommended to create bricks on top of thinly provisioned logical volumes.
-CREATE THIN LOGICAL VOLUMES:
+
+### CREATE THIN LOGICAL VOLUMES:
 	//Check existing volume groups
 	vgs
 	//Create a thin-provisioned LogicalVolume: (An LVM thin pool is created like a logical volume, but with flags set to mark it as a pool of available storage for thin volumes)
@@ -21,9 +22,10 @@ CREATE THIN LOGICAL VOLUMES:
 	mkfs.xfs -i size=512 /dev/vg_bricks/brick-b1
 	>> Gluster Storage stores metadata in the extended attributes area of the inodes
 
-CREATE BRICKS:
->> It's recommended that bricks be given a descriptive mount point to easily identify them (bricks/brick1) with a unique mount point within the storage pool
->> Devices used for bricks should be LVM based (LVM speeds up the snapshots mgmt, causing minimal performance impacts on the LVM backend system while those are being created)
+### CREATE BRICKS:
+It's recommended that bricks be given a descriptive mount point to easily identify them (bricks/brick1) with a unique mount point within the storage pool
+
+Devices used for bricks should be LVM based (LVM speeds up the snapshots mgmt, causing minimal performance impacts on the LVM backend system while those are being created)
 	//Create the mountpoint (Must be unique in the trusted storage pool)
 	mkdir -p /bricks/brick-a1
 	mkdir -p /bricks/brick-b1
