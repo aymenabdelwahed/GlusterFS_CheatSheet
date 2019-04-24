@@ -22,11 +22,11 @@ Remove ACL:
 setfacl -R -x 
 ```
 
-# Apply a shared ACLs / Shared directory.
+### Apply a shared ACLs / Shared directory.
 Mounted directory should be owned nby "accountants" group:
 ```
 chgrp accountants /mnt/finance/profits
-```	
+```
 
 Any new files/directories should also be owned by the "accountants" group
 Any other users should have no access
@@ -40,7 +40,7 @@ setfacl -R -m g:admins:rwX /mnt/groupdata/admindocs
 setfacl -R -m d:g:admins:rwX /mnt/groupdata/admindocs
 ```
 
-# QUOTAS:
+### QUOTAS:
 Enable directory quotas or volume quotas
 ```
 	gluster volume quota <VOLUME> enable
